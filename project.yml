@@ -1,0 +1,75 @@
+name: SunTimes
+options:
+  bundleIdPrefix: com.marcowarm
+  deploymentTarget:
+    watchOS: "10.0"
+  xcodeVersion: "16.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    # Set your Apple Developer Team ID here (or in Xcode > Signing & Capabilities)
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  SunTimesWatch:
+    type: application
+    platform: watchOS
+    sources:
+      - path: SunTimesWatch
+      - path: Shared
+    dependencies:
+      - target: SunTimesWidget
+        embed: true
+    entitlements:
+      path: SunTimesWatch/SunTimesWatch.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.marcowarm.SunTimes
+    info:
+      path: SunTimesWatch/Info.plist
+      properties:
+        CFBundleDisplayName: SunTimes
+        WKApplication: true
+        WKWatchOnly: true
+        NSLocationWhenInUseUsageDescription: "Your location is used to compute sunrise, sunset, golden hour and blue hour times."
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.marcowarm.SunTimes
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "4"
+        SDKROOT: watchos
+
+  SunTimesWidget:
+    type: app-extension
+    platform: watchOS
+    sources:
+      - path: SunTimesWidget
+      - path: Shared
+    entitlements:
+      path: SunTimesWidget/SunTimesWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.marcowarm.SunTimes
+    info:
+      path: SunTimesWidget/Info.plist
+      properties:
+        CFBundleDisplayName: SunTimes
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+        # Lets the widget extension request location itself (when-in-use granted by the app).
+        NSWidgetWantsLocation: true
+        NSLocationWhenInUseUsageDescription: "Your location is used to compute sunrise, sunset, golden hour and blue hour times."
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.marcowarm.SunTimes.SunTimesWidget
+        TARGETED_DEVICE_FAMILY: "4"
+        SDKROOT: watchos
+        SKIP_INSTALL: true
