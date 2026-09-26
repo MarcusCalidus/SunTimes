@@ -52,6 +52,29 @@ The widget timeline has one entry per event boundary, so the face flips to the n
 
 Compiles the shared solar code with the macOS toolchain and prints events for London, Berlin, Sydney, New York and Tromsø (polar day) next to reference sunrise/sunset times.
 
+## Keeping a free-account build alive
+
+Apps signed with a free (personal team) Apple ID expire after 7 days. `Scripts/resign-to-watch.sh` rebuilds, re-signs and re-installs the app on your watch; `Scripts/install-launch-agent.sh` runs it automatically.
+
+1. Create your local config from the template (`.env` is git-ignored):
+   ```sh
+   cp .env.example .env
+   ```
+   Find your watch's identifier (UDID or CoreDevice identifier) with `xcrun devicectl list devices` (pick the row whose *Reality* is `physical`, not a simulator) and set it in `.env`:
+   ```sh
+   SUNTIMES_WATCH_ID=<your-watch-id>
+   ```
+   The team ID is taken from the *Apple Development* certificate in your keychain. If you have several, also set `SUNTIMES_TEAM_ID`. See `.env.example` for all options. To keep the file elsewhere, point `SUNTIMES_ENV_FILE` at it.
+2. Try it once: `./Scripts/resign-to-watch.sh --force`
+3. Install the launch agent: `./Scripts/install-launch-agent.sh` (remove with `--uninstall`).
+
+The agent checks every 3 hours and re-installs once 20 hours have passed since the last success, so a day when the watch is unreachable is retried automatically. It builds from a private copy of the working tree in `~/Library/Caches/SunTimes`, so the project you open in Xcode is not touched. Logs go to `~/Library/Logs/SunTimes/auto-resign.log`; if installs keep failing for 5 days, you get a macOS notification.
+
+Two macOS privacy rules shape this setup:
+
+- Background jobs cannot read `~/Documents`, `~/Desktop` or `~/Downloads`, so keep the repository somewhere else (e.g. `~/Developer`). After moving it, run `install-launch-agent.sh` again.
+- Background processes that aren't apps cannot reach devices on the local network, so the agent runs the script through a small helper app (`~/Library/Application Support/SunTimes/SunTimes Auto-Resign.app`) that the installer generates. If macOS asks whether it may find devices on your local network, allow it.
+
 ## License
 
 Licensed under the [Apache License, Version 2.0](LICENSE).
