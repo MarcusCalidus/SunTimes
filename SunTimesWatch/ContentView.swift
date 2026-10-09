@@ -29,6 +29,15 @@ final class SunModel: ObservableObject {
             locationDate = stored.date
         }
         recompute()
+
+        fetcher.onAuthorizationChange = { [weak self] status in
+            self?.authorization = status
+            if status == .authorizedWhenInUse || status == .authorizedAlways {
+                Task {
+                    await self?.refresh()
+                }
+            }
+        }
     }
 
     func requestPermissionIfNeeded() {

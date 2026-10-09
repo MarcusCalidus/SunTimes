@@ -41,6 +41,8 @@ final class OneShotLocationFetcher: NSObject, CLLocationManagerDelegate, @unchec
     private var continuation: CheckedContinuation<CLLocationCoordinate2D?, Never>?
     private var finished = false
 
+    var onAuthorizationChange: ((CLAuthorizationStatus) -> Void)?
+
     override init() {
         super.init()
         manager.delegate = self
@@ -60,6 +62,7 @@ final class OneShotLocationFetcher: NSObject, CLLocationManagerDelegate, @unchec
         guard status == .authorizedWhenInUse || status == .authorizedAlways else { return nil }
 
         return await withCheckedContinuation { (cont: CheckedContinuation<CLLocationCoordinate2D?, Never>) in
+            self.continuation?.resume(returning: nil) // Prevent continuation leaks on concurrent calls
             self.continuation = cont
             self.finished = false
             self.manager.requestLocation()
@@ -86,6 +89,10 @@ final class OneShotLocationFetcher: NSObject, CLLocationManagerDelegate, @unchec
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         finish(with: nil)
+    }
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        onAuthorizationChange?(manager.authorizationStatus)
     }
 }
 
